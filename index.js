@@ -15,6 +15,10 @@ let mexc_data_dfyn={}
 let htx_data_dfyn={}
 let asd_data_dfyn={}
 let gate_data_dfyn={}
+let uniswap_data_route_eth={}
+let uniswap_data_route_usdc={}
+let uniswap_data_route_eth_v3={}
+let uniswap_data_dfyn_eth={}
 // const exchange = new binance();
 // const exchange1 = new kucoin();
 // const ticker = await exchange1.fetchTicker('ROUTE/USDT');
@@ -204,7 +208,59 @@ const fetchData = () => {
     .catch(error => {
         console.error('Error fetching data:', error);
     });
+    
 
+    //uniswap
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x819de42d3ab832eaf7111a222a8a5a7419f13b48`)
+    .then(response => response.json())
+    .then(data => {
+        // Replace the global object with the fetched object
+      uniswap_data_route_usdc = data;
+        // console.log('Global object updated with data from API:',gate_data);
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x92CC4300B9FD36242900BcA782b2E9E000BD5099`)
+    .then(response => response.json())
+    .then(data => {
+        // Replace the global object with the fetched object
+      uniswap_data_route_eth = data;
+        // console.log('Global object updated with data from API:',gate_data);
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x5c2b3Edbe845764B99eAebE87377F1F9D27D2a7E`)
+    .then(response => response.json())
+    .then(data => {
+        // Replace the global object with the fetched object
+      uniswap_data_route_eth_v3 = data;
+        // console.log('Global object updated with data from API:',gate_data);
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0xCAb335e1964363e48A790DA303B74Ec02D3F8fB2`)
+    .then(response => response.json())
+    .then(data => {
+        // Replace the global object with the fetched object
+      uniswap_data_dfyn_eth = data;
+        // console.log('Global object updated with data from API:',gate_data);
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+    
 
 
     }
@@ -246,6 +302,18 @@ app.get('/gatedata',(req,res)=>{
     res.send(gate_data_route)
     else
     res.send(gate_data_dfyn)
+})
+
+app.get('/uniswapdata',(req,res)=>{
+    const token = req.query.token;
+    if(token=="routeusdcv2")
+        res.send(uniswap_data_route_usdc)
+    else if(token=="routeethv2")
+        res.send(uniswap_data_route_eth)
+    else if(token=="routeethv3")
+        res.send(uniswap_data_route_eth_v3)
+    else if(token=="dfynethv2")
+        res.send(uniswap_data_dfyn_eth)
 })
 
 
