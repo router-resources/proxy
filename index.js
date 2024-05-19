@@ -982,7 +982,7 @@ app.get('/asddepth',(req,res)=>{
     res.send(asd_data_route_depth)
 })
 
-app.get('/gatedata',(req,res)=>{
+app.get('/gatedepth',(req,res)=>{
     const token=req.query.token;
     if(token=="route")
     res.send(gate_data_route_depth)
