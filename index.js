@@ -904,7 +904,7 @@ const fetchData = async () => {
     // fetchData1();
 
 
-// const interval = setInterval(fetchData, 3 * 1000);
+const interval = setInterval(fetchData, 3000);
 
 app.get('/kucoindata',(req,res)=>{
 
