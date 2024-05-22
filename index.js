@@ -15,6 +15,40 @@ import {
 
 const routeCollection = collection(db, "route");
 
+let bybit_data_route={
+    "symbol": "ROUTE/USDT",
+    "high": 2.9218,
+    "low": 2.7987,
+    "bid": 2.8039,
+    "bidVolume": 89.18,
+    "ask": 2.8104,
+    "askVolume": 88.97,
+    "vwap": 2.87077906374863,
+    "open": 2.8489,
+    "close": 2.81,
+    "last": 2.81,
+    "change": -0.0389,
+    "percentage": -1.37,
+    "average": 2.82945,
+    "baseVolume": 12951.65,
+    "quoteVolume": 37181.325661,
+    "info": {
+      "symbol": "ROUTEUSDT",
+      "bid1Price": "2.8039",
+      "bid1Size": "89.18",
+      "ask1Price": "2.8104",
+      "ask1Size": "88.97",
+      "lastPrice": "2.81",
+      "prevPrice24h": "2.8489",
+      "price24hPcnt": "-0.0137",
+      "highPrice24h": "2.9218",
+      "lowPrice24h": "2.7987",
+      "turnover24h": "37181.325661",
+      "volume24h": "12951.65"
+    }
+  }
+
+
 let kucoin_data_route={
     "code": "200000",
     "data": {
@@ -36,7 +70,7 @@ let kucoin_data_route={
       "makerCoefficient": "2"
     }
   }
-let bybit_data_route={}
+
 let mexc_data_route={
     "symbol": "ROUTEUSDT",
     "priceChange": "-0.168",
@@ -866,7 +900,78 @@ const fetchData = async () => {
         
     }
 
+    //ByBit
+    console.log("Bybit")
+
+    const exchange = new bybit();
+    orderbookUrl = await exchange.fetchOrderBook('ROUTE/USDT');
+    console.log("Bybit")
+    tickerUrl = await exchange.fetchTicker('ROUTE/USDT');
+    bybit_data_route=tickerUrl
+    console.log("Bybit")
+   
+
+    try {
+      
+        const orderbookResponse =orderbookUrl;
+        const tickerResponse = tickerUrl;
+
+       
+        if (1==1) {
+            const orderbookData =  orderbookResponse
+            const tickerData =  tickerResponse
+            const bids = orderbookData.bids;
+            const lastTradedPrice = parseFloat(tickerData.info.lastPrice);
+            console.log(bids)
+        
+
+            
+            const ranges = {
+                "0.3%": lastTradedPrice * 0.997,
+                "0.5%": lastTradedPrice * 0.995,
+                "1%": lastTradedPrice * 0.99
+            };
+
+          
+            const totalValues = {
+                "0.3%": 0,
+                "0.5%": 0,
+                "1%": 0
+            };
+
+            bids.forEach(bid => {
+                const price = parseFloat(bid[0]);
+                const quantity = parseFloat(bid[1]);
+                const value = price * quantity;
+
+                for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
+                    if (price >= rangeValue) {
+                        totalValues[rangeKey] += value;
+                       bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
+
+                    }
+                }
+            });
+           
+           
+            
+            for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
+                console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
+            }
+
+            
+        } else {
+            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+        }
+    } catch (error) {
+        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+    }
+
+
     
+        const bybit_volume_route=bybit_data_route.quoteVolume
+        const bybit_spread_route=bybit_data_route.info.ask1Price-bybit_data_route.info.bid1Price
+        const bybit_depth_route=bybit_data_route_depth
 
         const kucoin_volume_route=kucoin_data_route.data.volValue
         const kucoin_spread_route=kucoin_data_route.data.sell-kucoin_data_route.data.buy
@@ -880,12 +985,12 @@ const fetchData = async () => {
         const gate_volume_route=gate_data_route[0].quote_volume
         const gate_spread_route=gate_data_route[0].lowest_ask-gate_data_route[0].highest_bid
         const gate_depth_route=gate_data_route_depth
-        
+       
 
 
         const now = new Date();
         const time=date.format(now, 'MMM DD YYYY');
-        await addDoc(routeCollection,{time:time,exchange:[{ name:"Kucoin",volume:kucoin_volume_route,spread:kucoin_spread_route,depth:kucoin_data_route_depth },{  name:"Mexc",volume:mexc_volume_route,spread:mexc_spread_route,depth:mexc_data_route_depth },{name:"Ascendex", volume:asd_volume_route,spread:asd_spread_route,depth:asd_data_route_depth },{name:"Gate", volume:gate_volume_route,spread:gate_spread_route,depth:gate_data_route_depth} ]});
+        await addDoc(routeCollection,{time:time,exchange:[{name:"Bybit", volume:bybit_volume_route,spread:bybit_spread_route,depth:bybit_data_route_depth},{ name:"Kucoin",volume:kucoin_volume_route,spread:kucoin_spread_route,depth:kucoin_data_route_depth },{  name:"Mexc",volume:mexc_volume_route,spread:mexc_spread_route,depth:mexc_data_route_depth },{name:"Ascendex", volume:asd_volume_route,spread:asd_spread_route,depth:asd_data_route_depth },{name:"Gate", volume:gate_volume_route,spread:gate_spread_route,depth:gate_data_route_depth} ]});
        
       
        
@@ -913,9 +1018,6 @@ app.get('/kucoindata',(req,res)=>{
     res.send(kucoin_data_route)
     else
     res.send(kucoin_data_dfyn)
-})
-app.get('/bybitdata',(req,res)=>{
-    res.send(bybit_data_route)
 })
 
 app.get('/mexcdata',(req,res)=>{
@@ -962,9 +1064,7 @@ app.get('/kucoindepth',(req,res)=>{
     else
     res.send(kucoin_data_dfyn_depth)
 })
-app.get('/bybitdepth',(req,res)=>{
-    res.send(bybit_data_route_depth)
-})
+
 
 app.get('/mexcdepth',(req,res)=>{
     const token=req.query.token;
@@ -990,6 +1090,20 @@ app.get('/gatedepth',(req,res)=>{
     res.send(gate_data_dfyn_depth)
 })
 
+app.get('/bybitdata',async (req,res)=>{
+
+    const exchange = new bybit();
+    const ticker = await exchange.fetchTicker('ROUTE/USDT');
+   res.send(ticker);
+
+})
+
+app.get('/bybitdepth',async (req,res)=>{
+
+    res.send(bybit_data_route_depth);
+
+})
+
 
 app.get('/getdate',(req,res)=>{
 
@@ -1011,6 +1125,7 @@ app.get('/read',async (req,res)=>{
     
   
 })
+
 
 
 
