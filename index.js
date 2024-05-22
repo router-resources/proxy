@@ -12,6 +12,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import axios from 'axios';
 
 const routeCollection = collection(db, "route");
 
@@ -270,6 +271,42 @@ app.get('/proxy', async (req, res) => {
 
 
 const fetchData = async () => {
+
+
+    //bybit
+
+   
+    let url = 'https://api.bybit.com/v5/market/tickers';
+    let params = {
+      category: 'spot',
+      symbol: 'ROUTEUSDT'
+    };
+    
+    axios.get(url, {
+      params,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      },
+      proxy: false // disable proxy if not required
+    })
+    .then(response => {
+    bybit_data_route=response.data;
+    })
+    .catch(error => {
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Error request data:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+    });
+   
+
+  
+
 
     
 
@@ -901,76 +938,85 @@ const fetchData = async () => {
     }
 
     //ByBit
-    console.log("Bybit")
 
-    const exchange = new bybit();
-    orderbookUrl = await exchange.fetchOrderBook('ROUTE/USDT');
-    console.log("Bybit")
-    tickerUrl = await exchange.fetchTicker('ROUTE/USDT');
-    bybit_data_route=tickerUrl
-    console.log("Bybit")
+    let orderbookData;
+    let tickerData=bybit_data_route
+
+    url = 'https://api.bybit.com/v5/market/orderbook';
+    params = {
+      category: 'spot',
+      symbol: 'ROUTEUSDT',
+      limit:10
+    };
+    
+    axios.get(url, {
+      params,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      },
+      proxy: false // disable proxy if not required
+    })
+    .then(response => {
+        orderbookData=response.data;
+
+        const bids = response.data.result.b;
+        const lastTradedPrice = parseFloat(tickerData.result.list[0].lastPrice);
+        console.log(lastTradedPrice)
+    
+
+      
+        const ranges = {
+            "0.3%": lastTradedPrice * 0.997,
+            "0.5%": lastTradedPrice * 0.995,
+            "1%": lastTradedPrice * 0.99
+        };
+
+     
+        const totalValues = {
+            "0.3%": 0,
+            "0.5%": 0,
+            "1%": 0
+        };
+
+        bids.forEach(bid => {
+            const price = parseFloat(bid[0]);
+            const quantity = parseFloat(bid[1]);
+            const value = price * quantity;
+
+            for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
+                if (price >= rangeValue) {
+                    totalValues[rangeKey] += value;
+                   bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
+
+                }
+            }
+        });
+
+      
+        
+        for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
+            console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
+        }
+
+    })
+    .catch(error => {
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        console.error('Error status:', error.response.status);
+        console.error('Error headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Error request data:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+    });
    
 
-    try {
-      
-        const orderbookResponse =orderbookUrl;
-        const tickerResponse = tickerUrl;
-
-       
-        if (1==1) {
-            const orderbookData =  orderbookResponse
-            const tickerData =  tickerResponse
-            const bids = orderbookData.bids;
-            const lastTradedPrice = parseFloat(tickerData.info.lastPrice);
-            console.log(bids)
-        
-
-            
-            const ranges = {
-                "0.3%": lastTradedPrice * 0.997,
-                "0.5%": lastTradedPrice * 0.995,
-                "1%": lastTradedPrice * 0.99
-            };
-
-          
-            const totalValues = {
-                "0.3%": 0,
-                "0.5%": 0,
-                "1%": 0
-            };
-
-            bids.forEach(bid => {
-                const price = parseFloat(bid[0]);
-                const quantity = parseFloat(bid[1]);
-                const value = price * quantity;
-
-                for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
-                    if (price >= rangeValue) {
-                        totalValues[rangeKey] += value;
-                       bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
-
-                    }
-                }
-            });
-           
-           
-            
-            for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
-                console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
-            }
-
-            
-        } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
-        }
-    } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
-    }
-
-
+ 
+   
     
-        const bybit_volume_route=bybit_data_route.quoteVolume
-        const bybit_spread_route=bybit_data_route.info.ask1Price-bybit_data_route.info.bid1Price
+        const bybit_volume_route=bybit_data_route.result.list[0].turnover24h;
+        const bybit_spread_route=bybit_data_route.result.list[0].ask1Price-bybit_data_route.result.list[0].bid1Price
         const bybit_depth_route=bybit_data_route_depth
 
         const kucoin_volume_route=kucoin_data_route.data.volValue
@@ -1091,11 +1137,8 @@ app.get('/gatedepth',(req,res)=>{
 })
 
 app.get('/bybitdata',async (req,res)=>{
-
-    const exchange = new bybit();
-    const ticker = await exchange.fetchTicker('ROUTE/USDT');
-   res.send(ticker);
-
+    res.send(bybit_data_route)
+  
 })
 
 app.get('/bybitdepth',async (req,res)=>{
