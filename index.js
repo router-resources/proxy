@@ -276,7 +276,7 @@ const fetchData = async () => {
     //bybit
 
    
-    let url = 'https://api.bybit.com/v5/market/tickers';
+    let url = `https://api.bybit.com/v5/market/tickers`;
     let params = {
       category: 'spot',
       symbol: 'ROUTEUSDT'
@@ -287,7 +287,7 @@ const fetchData = async () => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       },
-      proxy: false // disable proxy if not required
+    
     })
     .then(response => {
     bybit_data_route=response.data;
@@ -942,7 +942,7 @@ const fetchData = async () => {
     let orderbookData;
     let tickerData=bybit_data_route
 
-    url = 'https://api.bybit.com/v5/market/orderbook';
+    url = `https://api.bybit.com/v5/market/orderbook`;
     params = {
       category: 'spot',
       symbol: 'ROUTEUSDT',
@@ -954,7 +954,7 @@ const fetchData = async () => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       },
-      proxy: false // disable proxy if not required
+     
     })
     .then(response => {
         orderbookData=response.data;
