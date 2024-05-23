@@ -939,106 +939,122 @@ const fetchData = async () => {
 
     //ByBit
 
-    let orderbookData;
-    let tickerData=bybit_data_route
+    console.log("Bybit")
 
-    url = `https://api.bybit.com/v5/market/orderbook`;
-    params = {
-      category: 'spot',
-      symbol: 'ROUTEUSDT',
-      limit:10
-    };
+    try{let orderbookData;
+        let tickerData=bybit_data_route
     
-    axios.get(url, {
-      params,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
-     
-    })
-    .then(response => {
-        orderbookData=response.data;
-
-        const bids = response.data.result.b;
-        const lastTradedPrice = parseFloat(tickerData.result.list[0].lastPrice);
-        console.log(lastTradedPrice)
-    
-
-      
-        const ranges = {
-            "0.3%": lastTradedPrice * 0.997,
-            "0.5%": lastTradedPrice * 0.995,
-            "1%": lastTradedPrice * 0.99
+        url = `https://api.bybit.com/v5/market/orderbook`;
+        params = {
+          category: 'spot',
+          symbol: 'ROUTEUSDT',
+          limit:10
         };
-
-     
-        const totalValues = {
-            "0.3%": 0,
-            "0.5%": 0,
-            "1%": 0
-        };
-
-        bids.forEach(bid => {
-            const price = parseFloat(bid[0]);
-            const quantity = parseFloat(bid[1]);
-            const value = price * quantity;
-
-            for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
-                if (price >= rangeValue) {
-                    totalValues[rangeKey] += value;
-                   bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
-
-                }
-            }
-        });
-
-      
+        let bybitdepth={}
         
-        for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
-            console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
-        }
-
-    })
-    .catch(error => {
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error status:', error.response.status);
-        console.error('Error headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('Error request data:', error.request);
-      } else {
-        console.error('Error message:', error.message);
-      }
-    });
-   
-
- 
-   
+        axios.get(url, {
+          params,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          },
+         
+        })
+       
+        .then(response => {
+            orderbookData=response.data;
     
-        const bybit_volume_route=bybit_data_route.result.list[0].turnover24h;
-        const bybit_spread_route=bybit_data_route.result.list[0].ask1Price-bybit_data_route.result.list[0].bid1Price
-        const bybit_depth_route=bybit_data_route_depth
+            const bids = response.data.result.b;
+            const lastTradedPrice = parseFloat(tickerData.result.list[0].lastPrice);
+            console.log(lastTradedPrice)
+        
+    
+          
+            const ranges = {
+                "0.3%": lastTradedPrice * 0.997,
+                "0.5%": lastTradedPrice * 0.995,
+                "1%": lastTradedPrice * 0.99
+            };
+    
+         
+            const totalValues = {
+                "0.3%": 0,
+                "0.5%": 0,
+                "1%": 0
+            };
+    
+            bids.forEach(bid => {
+                const price = parseFloat(bid[0]);
+                const quantity = parseFloat(bid[1]);
+                const value = price * quantity;
+    
+                for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
+                    if (price >= rangeValue) {
+                        totalValues[rangeKey] += value;
+                       bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
+                       bybitdepth[rangeKey]=totalValues[rangeKey]
+                       console.log("bybit[0.5%]="+bybitdepth[rangeKey])
+    
+                    }
+                }
+            });
+    
+          
+            
+            for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
 
-        const kucoin_volume_route=kucoin_data_route.data.volValue
-        const kucoin_spread_route=kucoin_data_route.data.sell-kucoin_data_route.data.buy
-        const kucoin_depth_route=kucoin_data_route_depth
-        const mexc_volume_route=mexc_data_route.volume
-        const mexc_spread_route=mexc_data_route.askPrice-mexc_data_route.bidPrice
-        const mexc_depth_route=mexc_data_route_depth
-        const asd_volume_route=asd_data_route.data.volume
-        const asd_spread_route=asd_data_route.data.ask[0]-asd_data_route.data.bid[0]
-        const asd_depth_route=asd_data_route_depth
-        const gate_volume_route=gate_data_route[0].quote_volume
-        const gate_spread_route=gate_data_route[0].lowest_ask-gate_data_route[0].highest_bid
-        const gate_depth_route=gate_data_route_depth
+                bybit_data_route[rangeKey]=totalValue.toFixed(2)
+                console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
+            }
+            console.log("bybit depth for 0.5% is"+bybit_data_route_depth["0.5%"])
+            const bybit_volume_route=bybit_data_route.result.list[0].turnover24h;
+            const bybit_spread_route=bybit_data_route.result.list[0].ask1Price-bybit_data_route.result.list[0].bid1Price
+          
+            const kucoin_volume_route=kucoin_data_route.data.volValue
+            const kucoin_spread_route=kucoin_data_route.data.sell-kucoin_data_route.data.buy
+            const kucoin_depth_route=kucoin_data_route_depth
+            const mexc_volume_route=mexc_data_route.volume
+            const mexc_spread_route=mexc_data_route.askPrice-mexc_data_route.bidPrice
+            const mexc_depth_route=mexc_data_route_depth
+            const asd_volume_route=asd_data_route.data.volume
+            const asd_spread_route=asd_data_route.data.ask[0]-asd_data_route.data.bid[0]
+            const asd_depth_route=asd_data_route_depth
+            const gate_volume_route=gate_data_route[0].quote_volume
+            const gate_spread_route=gate_data_route[0].lowest_ask-gate_data_route[0].highest_bid
+            const gate_depth_route=gate_data_route_depth
+           
+    
+    
+            const now = new Date();
+          
+            const time=date.format(now, 'MMM DD YYYY');
+             addDoc(routeCollection,{time:time,exchange:[{name:"Bybit", volume:bybit_volume_route,spread:bybit_spread_route,depth:bybit_data_route_depth},{ name:"Kucoin",volume:kucoin_volume_route,spread:kucoin_spread_route,depth:kucoin_data_route_depth },{  name:"Mexc",volume:mexc_volume_route,spread:mexc_spread_route,depth:mexc_data_route_depth },{name:"Ascendex", volume:asd_volume_route,spread:asd_spread_route,depth:asd_data_route_depth },{name:"Gate", volume:gate_volume_route,spread:gate_spread_route,depth:gate_data_route_depth} ]});
+    
+        })
+        .catch(error => {
+          if (error.response) {
+            console.error('Error response bybit data:', error.response.data);
+            console.error('Error bybit status:', error.response.status);
+            console.error('Error bybit headers:', error.response.headers);
+          } else if (error.request) {
+            console.error('Error bybit request data:', error.request);
+          } else {
+            console.error('Error bybit message:', error.message);
+          }
+        });
        
+    }
+    catch(err)
+    {
+        console.log("bybit error")
+    }
 
-
-        const now = new Date();
-        const time=date.format(now, 'MMM DD YYYY');
-        await addDoc(routeCollection,{time:time,exchange:[{name:"Bybit", volume:bybit_volume_route,spread:bybit_spread_route,depth:bybit_data_route_depth},{ name:"Kucoin",volume:kucoin_volume_route,spread:kucoin_spread_route,depth:kucoin_data_route_depth },{  name:"Mexc",volume:mexc_volume_route,spread:mexc_spread_route,depth:mexc_data_route_depth },{name:"Ascendex", volume:asd_volume_route,spread:asd_spread_route,depth:asd_data_route_depth },{name:"Gate", volume:gate_volume_route,spread:gate_spread_route,depth:gate_data_route_depth} ]});
-       
+    console.log("Bybit end")
+ 
+  
+    
       
+       
+    
        
 
 
