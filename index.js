@@ -135,6 +135,8 @@ let uniswap_data_route_eth={}
 let uniswap_data_route_usdc={}
 let uniswap_data_route_eth_v3={}
 let uniswap_data_dfyn_eth={}
+let dfyn_data_route_usdc={}
+let dfyn_data_route_eth={}
 
 let kucoin_data_route_depth={
     "0.3%": 0,
@@ -475,6 +477,31 @@ const fetchData = async () => {
     });
 
 
+    //  dfyn exchange
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/polygon_pos/pools/0x40f0a05c8c7a86ad1491a3911c293e093fe92436`)
+    .then(response => response.json())
+    .then(data => {
+       
+      dfyn_data_route_usdc = data;
+      
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+    fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/polygon_pos/pools/0xebc4f9b1ce66258ac3a48578ffeeba1330ddb68b`)
+    .then(response => response.json())
+    .then(data => {
+       
+     dfyn_data_route_eth = data;
+      
+
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
 
    
 
@@ -1006,6 +1033,10 @@ const fetchData = async () => {
                 console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
             }
             console.log("bybit depth for 0.5% is"+bybit_data_route_depth["0.5%"])
+
+
+
+            
             const bybit_volume_route=bybit_data_route.result.list[0].turnover24h;
             const bybit_spread_route=bybit_data_route.result.list[0].ask1Price-bybit_data_route.result.list[0].bid1Price
           
@@ -1059,19 +1090,20 @@ const fetchData = async () => {
 
 
     }
-    const fetchData1 = async () => {
+  
+    
 
-        //kucoin
-      
-    
-       
-    
-        }
     fetchData();
-    // fetchData1();
+//     // fetchData1();
 
 
 const interval = setInterval(fetchData, 86400 * 1000);
+
+app.get('/fetchdata',(req,res)=>{
+
+    fetchData()
+})
+
 
 app.get('/kucoindata',(req,res)=>{
 
@@ -1109,13 +1141,94 @@ app.get('/gatedata',(req,res)=>{
 app.get('/uniswapdata',(req,res)=>{
     const token = req.query.token;
     if(token=="routeusdcv2")
-        res.send(uniswap_data_route_usdc)
+
+      {
+        fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x819de42d3ab832eaf7111a222a8a5a7419f13b48`)
+        .then(response => response.json())
+        .then(data => {
+          
+          
+          res.send(data)
+          
+    
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+      }
+        
     else if(token=="routeethv2")
-        res.send(uniswap_data_route_eth)
+        
+
+      {
+        fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x92cc4300b9fd36242900bca782b2e9e000bd5099`)
+        .then(response => response.json())
+        .then(data => {
+          
+          
+          res.send(data)
+          
+    
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+      }
+        
+       
     else if(token=="routeethv3")
-        res.send(uniswap_data_route_eth_v3)
+        
+      {
+        fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/eth/pools/0x5c2b3edbe845764b99eaebe87377f1f9d27d2a7e`)
+        .then(response => response.json())
+        .then(data => {
+          
+          
+          res.send(data)
+          
+    
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+      }
     else if(token=="dfynethv2")
         res.send(uniswap_data_dfyn_eth)
+})
+
+app.get('/dfyndata',(req,res)=>{
+
+    const token=req.query.token;
+    if(token=="routeusdc")
+        {
+            fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/polygon_pos/pools/0x40f0a05c8c7a86ad1491a3911c293e093fe92436`)
+            .then(response => response.json())
+            .then(data => {
+              
+              
+              res.send(data)
+              
+        
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+          }
+    else if(token=="routeeth")
+        {
+            fetch(`http://localhost:${PORT}/proxy?url=https://api.geckoterminal.com/api/v2/networks/polygon_pos/pools/0xebc4f9b1ce66258ac3a48578ffeeba1330ddb68b`)
+            .then(response => response.json())
+            .then(data => {
+              
+              
+              res.send(data)
+              
+        
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+          }
 })
 
 app.get('/kucoindepth',(req,res)=>{
