@@ -15,6 +15,7 @@ import {
 import axios from 'axios';
 
 const routeCollection = collection(db, "route");
+const route_dexCollection = collection(db, "dex_route");
 
 let bybit_data_route={
     "symbol": "ROUTE/USDT",
@@ -296,13 +297,13 @@ const fetchData = async () => {
     })
     .catch(error => {
       if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error status:', error.response.status);
-        console.error('Error headers:', error.response.headers);
+        console.error('Bybit Error response data:', error.response.data);
+        console.error('Bybit Error status:', error.response.status);
+        console.error('Bybit Error headers:', error.response.headers);
       } else if (error.request) {
-        console.error('Error request data:', error.request);
+        console.error('Bybit Error request data:', error.request);
       } else {
-        console.error('Error message:', error.message);
+        console.error('Bybit Error message:', error.message);
       }
     });
    
@@ -327,7 +328,7 @@ const fetchData = async () => {
 
         })
         .catch(error => {
-            console.error('Error fetching data:', error);
+            console.error('Kucoin Error fetching data:', error);
         });
 
         fetch(`http://localhost:${PORT}/proxy?url=https://api.kucoin.com/api/v1/market/stats?symbol=DFYN-USDT`)
@@ -338,7 +339,7 @@ const fetchData = async () => {
            
         })
         .catch(error => {
-            console.error('Error fetching data:', error);
+            console.error('Kucoin Error fetching data:', error);
         });
 
   
@@ -555,10 +556,10 @@ const fetchData = async () => {
 
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`Kucoin Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`Kucoin Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
 
@@ -611,10 +612,10 @@ const fetchData = async () => {
 
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`Kucoin Dfyn Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`Kucoin Dfyn Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
 
@@ -667,10 +668,10 @@ const fetchData = async () => {
           
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`mexc Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`mexc Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
     symbol="DFYNUSDT"
@@ -720,10 +721,10 @@ const fetchData = async () => {
             
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`mexc dfyn Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`mexc dfyn Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
     //houbi
@@ -777,10 +778,10 @@ const fetchData = async () => {
 
           
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`huobli Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`huobli Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
     
@@ -832,10 +833,10 @@ const fetchData = async () => {
           
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`ascendex Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`ascendex Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
 
@@ -897,10 +898,10 @@ const fetchData = async () => {
 
             
         } else {
-            console.log(`Failed to retrieve data for ${symbol} from the API.`);
+            console.log(`gate Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`gate Error occurred while making the API request for ${symbol}: ${error}`);
     }
 
     symbol="DFYN_USDT"
@@ -960,7 +961,7 @@ const fetchData = async () => {
             console.log(`Failed to retrieve data for ${symbol} from the API.`);
         }
     } catch (error) {
-        console.log(`Error occurred while making the API request for ${symbol}: ${error}`);
+        console.log(`gate dfyn Error occurred while making the API request for ${symbol}: ${error}`);
         
     }
 
@@ -1008,31 +1009,39 @@ const fetchData = async () => {
                 "0.5%": 0,
                 "1%": 0
             };
-    
-            bids.forEach(bid => {
-                const price = parseFloat(bid[0]);
-                const quantity = parseFloat(bid[1]);
-                const value = price * quantity;
-    
-                for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
-                    if (price >= rangeValue) {
-                        totalValues[rangeKey] += value;
-                       bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
-                       bybitdepth[rangeKey]=totalValues[rangeKey]
-                       console.log("bybit[0.5%]="+bybitdepth[rangeKey])
-    
+            try{
+                bids.forEach(bid => {
+                    const price = parseFloat(bid[0]);
+                    const quantity = parseFloat(bid[1]);
+                    const value = price * quantity;
+        
+                    for (const [rangeKey, rangeValue] of Object.entries(ranges)) {
+                        if (price >= rangeValue) {
+                            totalValues[rangeKey] += value;
+                           bybit_data_route_depth[rangeKey]=totalValues[rangeKey]
+                           bybitdepth[rangeKey]=totalValues[rangeKey]
+                           console.log("bybit[0.5%]="+bybitdepth[rangeKey])
+        
+                        }
                     }
+                });
+                 for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
+
+                    bybit_data_route[rangeKey]=totalValue.toFixed(2)
+                    console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
                 }
-            });
+                console.log("bybit depth for 0.5% is"+bybit_data_route_depth["0.5%"])
+            }
+            catch(error)
+            {
+                console.log("bybit",error)
+               
+            }
+         
     
           
             
-            for (const [rangeKey, totalValue] of Object.entries(totalValues)) {
-
-                bybit_data_route[rangeKey]=totalValue.toFixed(2)
-                console.log(`Total bid value within ${rangeKey} range: ${totalValue.toFixed(2)} USDT`);
-            }
-            console.log("bybit depth for 0.5% is"+bybit_data_route_depth["0.5%"])
+           
 
 
 
@@ -1052,13 +1061,27 @@ const fetchData = async () => {
             const gate_volume_route=gate_data_route[0].quote_volume
             const gate_spread_route=gate_data_route[0].lowest_ask-gate_data_route[0].highest_bid
             const gate_depth_route=gate_data_route_depth
-           
+
+            
+            const uniswapv2_route_eth_volume= uniswap_data_route_eth.data.attributes.volume_usd.h24;
+            const uniswapv2_route_usdc_volume= uniswap_data_route_usdc.data.attributes.volume_usd.h24
+            const uniswapv3_route_eth_volume=   uniswap_data_route_eth_v3.data.attributes.volume_usd.h24
+            const dfyn_route_eth_volume=  dfyn_data_route_eth.data.attributes.volume_usd.h24
+            const dfyn_route_usdc_volume=  dfyn_data_route_usdc.data.attributes.volume_usd.h24
     
     
             const now = new Date();
           
             const time=date.format(now, 'MMM DD YYYY');
+
+            addDoc(route_dexCollection,{time:time,exchange:[{name:"Uniswapv2routeeth",volume:uniswapv2_route_eth_volume},{name:"Uniswapv2routeusdc",volume:uniswapv2_route_usdc_volume},{name:"Uniswapv3routeeth",volume:uniswapv3_route_eth_volume},{name:"Dfyn_routeeth",volume:dfyn_route_eth_volume},{name:"Dfyn_routeusdc",volume:dfyn_route_usdc_volume}]}).then(()=>{
+                console.log("sent in route_dex")
+             }).catch((error)=>{
+                console.log("dex_route",error)
+             })
              addDoc(routeCollection,{time:time,exchange:[{name:"Bybit", volume:bybit_volume_route,spread:bybit_spread_route,depth:bybit_data_route_depth},{ name:"Kucoin",volume:kucoin_volume_route,spread:kucoin_spread_route,depth:kucoin_data_route_depth },{  name:"Mexc",volume:mexc_volume_route,spread:mexc_spread_route,depth:mexc_data_route_depth },{name:"Ascendex", volume:asd_volume_route,spread:asd_spread_route,depth:asd_data_route_depth },{name:"Gate", volume:gate_volume_route,spread:gate_spread_route,depth:gate_data_route_depth} ]});
+
+            
     
         })
         .catch(error => {
@@ -1296,6 +1319,16 @@ app.get('/read',async (req,res)=>{
        res.send(response)
     
   
+})
+
+app.get('/read_dex_route',async (req,res)=>{
+
+  
+    const data = await getDocs(route_dexCollection);
+   const response=data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+   res.send(response)
+
+
 })
 
 
