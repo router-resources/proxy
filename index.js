@@ -13,10 +13,9 @@ import {
   doc,
 } from "firebase/firestore";
 import axios from 'axios';
-
 const routeCollection = collection(db, "route");
 const route_dexCollection = collection(db, "dex_route");
-
+const route_dexDepthCollection = collection(db, "dex_depth");
 let bybit_data_route={
     "symbol": "ROUTE/USDT",
     "high": 2.9218,
@@ -204,7 +203,31 @@ let gate_data_dfyn_depth={
     "0.5%": 0,
     "1%": 0
 };
-
+let uniswapv2eth_data_route_depth={
+    "0.3%": 0,
+    "0.5%": 0,
+    "1%": 0
+};
+let uniswapv2usdc_data_route_depth={
+    "0.3%": 0,
+    "0.5%": 0,
+    "1%": 0
+};
+let uniswapv3eth_data_route_depth={
+    "0.3%": 0,
+    "0.5%": 0,
+    "1%": 0
+};
+let dfyneth_data_route_depth={
+    "0.3%": 0,
+    "0.5%": 0,
+    "1%": 0
+};
+let dfynusdc_data_route_depth={
+    "0.3%": 0,
+    "0.5%": 0,
+    "1%": 0
+};
 
 
 
@@ -434,6 +457,10 @@ const fetchData = async () => {
     .then(data => {
        
       uniswap_data_route_usdc = data;
+      uniswapv2usdc_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+      }
    
 
     })
@@ -446,6 +473,10 @@ const fetchData = async () => {
     .then(data => {
       
       uniswap_data_route_eth = data;
+      uniswapv2eth_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+      }
       
 
     })
@@ -458,6 +489,10 @@ const fetchData = async () => {
     .then(data => {
    
       uniswap_data_route_eth_v3 = data;
+      uniswapv3eth_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+      }
        
 
     })
@@ -470,6 +505,11 @@ const fetchData = async () => {
     .then(data => {
        
       uniswap_data_dfyn_eth = data;
+      dfyneth_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+      }
+
       
 
     })
@@ -485,6 +525,10 @@ const fetchData = async () => {
     .then(data => {
        
       dfyn_data_route_usdc = data;
+      dfynusdc_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+      }
       
 
     })
@@ -497,6 +541,10 @@ const fetchData = async () => {
     .then(data => {
        
      dfyn_data_route_eth = data;
+     dfyneth_data_route_depth={"0.3%":parseFloat(data.data.attributes.reserve_in_usd)*0.003,
+        "0.5%":parseFloat(data.data.attributes.reserve_in_usd)*0.005,
+        "1%":parseFloat(data.data.attributes.reserve_in_usd)*0.01
+     }
       
 
     })
@@ -1074,6 +1122,15 @@ const fetchData = async () => {
           
             const time=date.format(now, 'MMM DD YYYY');
 
+
+            addDoc(route_dexDepthCollection,{time:time,exchange:[{name:"Uniswapv2routeeth",
+                depth:uniswapv2eth_data_route_depth},{name:"Uniswapv2routeusdc",
+                    depth:uniswapv2usdc_data_route_depth},{name:"Uniswapv3routeeth",
+                        depth:uniswapv3eth_data_route_depth},{name:"dfynrouteeth",
+                            depth:dfyneth_data_route_depth},{name:"dfynrouteusdc",
+                                depth:dfynusdc_data_route_depth}
+            ]})
+
             addDoc(route_dexCollection,{time:time,exchange:[{name:"Uniswapv2routeeth",volume:uniswapv2_route_eth_volume},{name:"Uniswapv2routeusdc",volume:uniswapv2_route_usdc_volume},{name:"Uniswapv3routeeth",volume:uniswapv3_route_eth_volume},{name:"Dfyn_routeeth",volume:dfyn_route_eth_volume},{name:"Dfyn_routeusdc",volume:dfyn_route_usdc_volume}]}).then(()=>{
                 console.log("sent in route_dex")
              }).catch((error)=>{
@@ -1331,6 +1388,31 @@ app.get('/read_dex_route',async (req,res)=>{
 
 })
 
+app.get('/uniswapv2usdc_data_route_depth',(req,res)=>{
+    res.send(uniswapv2usdc_data_route_depth)
+})
+
+app.get('/uniswapv2eth_data_route_depth',(req,res)=>{
+    res.send(uniswapv2eth_data_route_depth)
+})
+
+app.get('/uniswapv3eth_data_route_depth',(req,res)=>{
+    res.send(uniswapv3eth_data_route_depth)
+})
+
+app.get('/dfyneth_data_route_depth',(req,res)=>{
+    res.send(dfyneth_data_route_depth)
+})
+
+app.get('/dfynusdc_data_route_depth',(req,res)=>{
+    res.send(dfynusdc_data_route_depth)
+})
+
+app.get('/dexdepth',async (req,res)=>{
+    const data = await getDocs(route_dexDepthCollection);
+   const response=data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+   res.send(response)
+})
 
 
 
